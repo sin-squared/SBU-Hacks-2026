@@ -148,6 +148,44 @@
 @utility animate-float-up { animation: float-up 0.9s ease-out forwards; }
 
 .city-plot { aspect-ratio: 0.8; justify-content: flex-end; }
+.city-canvas {
+  isolation: isolate;
+  position: relative;
+}
+.city-canvas::before {
+  background-image: linear-gradient(oklch(0.2 0.018 50 / 0.18), oklch(0.2 0.018 50 / 0.18)),
+    url("/images/brasshaven-background.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+}
+.city-management-panel {
+  background: oklch(0.2 0.018 50);
+  border: 1px solid color-mix(in oklab, var(--copper) 70%, transparent);
+  border-radius: var(--radius-lg);
+  min-width: 0;
+  padding: 1rem;
+  position: relative;
+  z-index: 1;
+}
+@media (min-width: 80rem) {
+  .city-play-layout {
+    padding-right: 24rem;
+  }
+  .city-management-panel {
+    max-height: calc(100vh - 16rem);
+    overflow-y: auto;
+    position: fixed;
+    right: 1.5rem;
+    top: 15rem;
+    width: min(22rem, calc(100vw - 3rem));
+  }
+}
 .city-plot > svg:first-child:not([class*="lucide"]) { width: min(100%, 6rem); height: auto; flex-shrink: 0; }
 .city-progress { accent-color: var(--brass); }
 .city-progress::-webkit-progress-bar { background: var(--iron); border-radius: 2px; }
