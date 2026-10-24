@@ -1,8 +1,8 @@
 Project Ideas:
+Interior design app
+Vacation planner
 
-something related to steam the app
+-something related to steam the app
 
 
 Problem ideas:
-
-
