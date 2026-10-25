@@ -1,7 +1,7 @@
 import { CircleDollarSign, Cog, Wind, Gem, FlaskConical, Droplets } from "lucide-react";
 import { RESOURCE_NAMES, type Cost, type Resource, type Stock } from "@/game/city-config";
 
-const ICONS = {
+export const RESOURCE_ICONS = {
   coins: CircleDollarSign,
   gears: Cog,
   steam: Wind,
@@ -27,7 +27,7 @@ export function ResourceAmounts({
     <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
       {Object.entries(amounts).map(([key, amount], index) => {
         const resource = key as Resource;
-        const Icon = ICONS[resource];
+        const Icon = RESOURCE_ICONS[resource];
         const affordable = available !== undefined && available[resource] + 1e-8 >= amount;
         const muted =
           completed || (available === undefined && active !== undefined && active[resource] <= 0);

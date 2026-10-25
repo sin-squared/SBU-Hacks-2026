@@ -12,6 +12,7 @@ import {
     Expeditions,
     EngineProject,
     CityEvent,
+    ExpansionObjectives,
 } from '@/components/CityPanels';
 import { hasAirshipDock, production, stage } from '@/game/city';
 import { useCity } from '@/hooks/useCity';
@@ -99,6 +100,12 @@ function Index() {
                     <span className="hidden text-sm text-brass sm:block">
                         {['Workshop', 'Industrial Quarter', 'Aetherport'][stage(s)]}
                     </span>
+                    <ExpansionObjectives
+                        game={game}
+                        onOpenResearch={() => {
+                            setTab('Research');
+                        }}
+                    />
                     <Button
                         variant="outline"
                         size="icon"
@@ -168,18 +175,6 @@ function Index() {
 
             <CityResources state={s} />
 
-            <div className="flex flex-wrap items-center gap-3 border-y border-copper/40 py-3">
-                <p role="status" aria-live="polite" className="text-sm text-brass">
-                    {s.notice}
-                </p>
-            </div>
-
-            {rates.shortages.length > 0 && (
-                <p className="text-sm text-destructive">
-                    {rates.shortages.join(' · ')}. Machines pause when supplies run out.
-                </p>
-            )}
-
             {game.saveError && (
                 <p role="alert" className="text-destructive">
                     Your city cannot be saved. Browser storage may be disabled or full.
@@ -196,10 +191,10 @@ function Index() {
                             setDemolishPlot(false);
                         }}
                     />
-                    <CityEvent game={game} />
+                    <CityEvent game={game} shortages={rates.shortages} />
                 </div>
 
-                <section className="city-management-panel min-w-0 lg:border-l lg:border-copper/50 lg:pl-6">
+                <section className={`city-management-panel min-w-0 lg:border-l lg:border-copper/50 lg:pl-6 ${currentTab === 'Contracts' ? 'city-steampunk-scrollbar' : ''}`}>
                     <nav
                         aria-label="City management"
                         className="mb-5 grid grid-cols-2 gap-2"
@@ -243,7 +238,7 @@ function Index() {
                 </section>
 
                 <section
-                    className="city-plot-details-panel space-y-3"
+                    className={`city-plot-details-panel space-y-3 ${game.state.plots[selectedPlot] ? '' : 'city-steampunk-scrollbar'}`}
                     aria-label="Selected plot details"
                 >
                     <CityPlotDetails

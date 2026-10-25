@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Lock, Ship, Wrench, Trophy, Factory, CircleHelp } from 'lucide-react';
+import { Bell, Check, CircleHelp, Factory, FlaskConical, Gauge, Lock, Package, ScrollText, Ship, Target, Trophy, UsersRound, Wrench, type LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { BUILDINGS, CONTRACTS, TECHNOLOGIES, DESTINATIONS, ENGINE_STEPS, cityEvent } from '@/game/city-config';
@@ -40,6 +40,26 @@ export function Contracts({ game }: { game: CityGame }) {
    {!done && reason && !hideBalance && <p className="text-xs text-muted-foreground">{reason}</p>}
   </article>;
  })}{visible.length === 0 && <p className="text-sm text-muted-foreground">No contracts awaiting delivery. Develop your city for new commissions.</p>}</div>;
+}
+export function ExpansionObjectives({ game, onOpenResearch }: { game: CityGame; onOpenResearch: () => void }) {
+ const [open, setOpen] = useState(false);
+ const s = game.state;
+ const next = nextPlotTechnology(s);
+ const reason = next ? actionReason(s, { type: 'technology', id: next.id }) : '';
+ return <div className="city-objectives-control">
+  <Button variant="outline" size="icon" aria-label="Expansion objectives" aria-expanded={open} aria-controls="city-expansion-objectives" title="Expansion objectives" onClick={() => setOpen(!open)}><Target aria-hidden="true"/></Button>
+  <section id="city-expansion-objectives" className="city-objectives-panel space-y-3" aria-label="Expansion objectives" hidden={!open}>
+   <h2 className="font-display text-brass">City objectives</h2>
+   {next ? <>
+    <p className="font-bold text-steam">Next expansion: Plot {next.unlockPlot}</p>
+    <p className="text-sm text-muted-foreground">{next.name} · {next.description}</p>
+    <p className="text-xs text-muted-foreground">Plots unlocked: {plotLimit(s)} / 12</p>
+    <p className="text-sm"><ResourceAmounts amounts={next.cost} available={s.resources}/></p>
+    <p className="text-xs text-muted-foreground">{reason || 'Requirements met. Unlock this expansion in Research.'}</p>
+    <Button size="sm" className="btn-brass" onClick={onOpenResearch}>View Research</Button>
+   </> : <p className="text-sm text-steam">All 12 plots are unlocked.</p>}
+  </section>
+ </div>;
 }
 export function Research({ game }: { game: CityGame }) {
  const s = game.state; const next = nextPlotTechnology(s);
@@ -117,17 +137,47 @@ export function EngineProject({ game }: { game: CityGame }) {
   </div>)}
  </div>;
 }
-export function CityEvent({ game }: { game: CityGame }) {
+export function CityEvent({ game, shortages = [] }: { game: CityGame; shortages?: string[] }) {
   const [openEventIndex, setOpenEventIndex] = useState<number | null>(null);
   const events = interactiveEvents(game.state);
+  const openEvent = events.find(event => event.eventIndex === openEventIndex);
   return <>
-    {game.state.shortageSeconds > 0 && <p role="status" className="mt-3 text-sm text-steam">Supply shortage: Gear-producing buildings run at 50% output for {Math.ceil(game.state.shortageSeconds)}s. Input consumption is unchanged.</p>}
-    <div aria-label="City notifications" className="fixed bottom-4 right-4 z-40 flex w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] flex-col gap-3 overflow-y-auto">
-     {events.map(event => <CityEventPanel key={event.eventIndex} game={{ ...game, state: eventState(game.state,event) }} openEventIndex={openEventIndex} setOpenEventIndex={setOpenEventIndex}/>)}
+    <div role="region" aria-label="Gameplay messages" className="city-gameplay-notifications">
+      <p aria-live="polite" className="city-notification-card text-sm text-brass">{game.state.notice}</p>
+      {shortages.length > 0 && <p aria-live="polite" className="city-notification-card text-sm text-destructive">{shortages.join(' · ')}. Machines pause when supplies run out.</p>}
+      {game.state.shortageSeconds > 0 && <p role="status" className="city-notification-card text-sm text-steam">Supply shortage: Gear-producing buildings run at 50% output for {Math.ceil(game.state.shortageSeconds)}s. Input consumption is unchanged.</p>}
     </div>
+    <div role="region" aria-label="City alerts" className="city-alert-stack">
+      {events.map(event => {
+        const eventStateValue = eventState(game.state, event);
+        const eventData = cityEvent(event.eventIndex);
+        if (!eventData) return null;
+        const plot = event.eventPlot === null ? null : eventStateValue.plots[event.eventPlot];
+        const description = plot && event.eventPlot !== null
+          ? isUnion(eventStateValue)
+            ? `${eventData.description} Affected workplace: ${BUILDINGS[plot.kind].name} on plot ${event.eventPlot + 1}. Production continues while you decide.`
+            : `${BUILDINGS[plot.kind].name} on plot ${event.eventPlot + 1} has broken down. Production is paused until you repair or scrap it.`
+          : eventData.description;
+        return <button
+          key={event.eventIndex}
+          type="button"
+          onClick={() => setOpenEventIndex(event.eventIndex)}
+          className="city-alert-card w-full shrink-0 rounded-lg border-2 border-brass bg-background p-3 text-left shadow-lg"
+        >
+          <span className="block text-xs font-bold uppercase text-muted-foreground">⚠️ City Alert · Click to Respond</span>
+          <span className="mt-2 block font-semibold text-brass">{eventData.title}</span>
+          <span className="mt-1 block text-sm">{description}</span>
+          <span className="mt-3 block text-xs text-muted-foreground">{openEventIndex === event.eventIndex ? 'Details shown above ↑' : 'View details →'}</span>
+        </button>;
+      })}
+    </div>
+    {openEvent && <CityEventPanel
+      game={{ ...game, state: eventState(game.state, openEvent) }}
+      onClose={() => setOpenEventIndex(null)}
+    />}
   </>;
 }
-function CityEventPanel({ game, openEventIndex, setOpenEventIndex }: { game: CityGame; openEventIndex: number | null; setOpenEventIndex: (id: number | null) => void }) {
+function CityEventPanel({ game, onClose }: { game: CityGame; onClose: () => void }) {
 
   const s = game.state;
 
@@ -137,8 +187,8 @@ function CityEventPanel({ game, openEventIndex, setOpenEventIndex }: { game: Cit
     cityEvent(s.eventIndex);
 
   if (!event) return null;
+  const EventIcon = cityEventIcon(event);
 
-  const isOpen = openEventIndex === s.eventIndex;
   const damagedBuilding = s.eventPlot === null ? null : s.plots[s.eventPlot];
   const description = damagedBuilding && s.eventPlot !== null
     ? isUnion(s) ? `${event.description} Affected workplace: ${BUILDINGS[damagedBuilding.kind].name} on plot ${s.eventPlot + 1}. Production continues while you decide.`
@@ -146,53 +196,20 @@ function CityEventPanel({ game, openEventIndex, setOpenEventIndex }: { game: Cit
     : event.description;
 
   return (
-    <>
-      {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setOpenEventIndex(s.eventIndex)}
-          aria-live="polite"
-          className="w-full shrink-0 rounded-lg border-2 border-brass bg-background p-3 text-left shadow-lg"
-        >
-          <span className="block text-xs font-bold uppercase text-muted-foreground">
-            ⚠️ City Alert · Click to Respond
-          </span>
-
-          <span className="mt-2 block font-semibold text-brass">
-            {event.title}
-          </span>
-
-          <span className="mt-1 block text-sm">
-            {description}
-          </span>
-
-          <span className="mt-3 block text-xs text-muted-foreground">
-            View details →
-          </span>
-        </button>
-      )}
-
-      <Dialog open={isOpen} onOpenChange={open => setOpenEventIndex(open ? s.eventIndex : null)}>
-          <DialogContent className="w-[calc(100%-2rem)] max-w-lg max-h-[85vh] overflow-y-auto rounded-xl border-2 border-brass bg-background p-5 shadow-xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase text-muted-foreground">
-                  {event.title === 'Travelling brass merchant' ? 'Trading Delegation' : 'City Emergency'}
-                </p>
-
-                <DialogTitle
-                  className="mt-1 text-xl font-bold text-brass"
-                >
-                  {event.title}
-                </DialogTitle>
+      <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-lg max-h-[85vh] overflow-y-auto rounded-xl border-2 border-brass bg-background p-5 shadow-xl">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-copper/60 bg-iron-deep text-brass">
+                  <EventIcon aria-hidden="true" className="h-7 w-7" />
+                </span>
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground">{event.title === 'Travelling brass merchant' ? 'Trading Delegation' : 'City Emergency'}</p>
+                  <DialogTitle className="mt-1 text-xl font-bold text-brass">{event.title}</DialogTitle>
+                </div>
               </div>
-
             </div>
-
-            <DialogDescription className="mt-4 text-sm">
-              {description}
-            </DialogDescription>
-
+            <DialogDescription className="mt-4 text-sm">{description}</DialogDescription>
             <div className="mt-5 space-y-4">
               {event.options.map((option, index) => {
                 const terms = eventTerms(s, index);
@@ -237,7 +254,7 @@ function CityEventPanel({ game, openEventIndex, setOpenEventIndex }: { game: Cit
                           eventIndex: s.eventIndex,
                         });
 
-                        setOpenEventIndex(null);
+                        onClose();
                       }}
                     >
                       {option.label}
@@ -270,12 +287,27 @@ function CityEventPanel({ game, openEventIndex, setOpenEventIndex }: { game: Cit
               })}
               {event.title === 'Travelling brass merchant' && <div className="border-t border-copper/50 pt-3">
                <p className="mb-2 text-xs text-muted-foreground">Not today. My money is safer in my pocket.</p>
-               <Button variant="outline" className="w-full" onClick={() => { game.act({type:'declineTrade',eventIndex:s.eventIndex}); setOpenEventIndex(null); }}>Leave It Be</Button>
+               <Button variant="outline" className="w-full" onClick={() => { game.act({type:'declineTrade',eventIndex:s.eventIndex}); onClose(); }}>Leave It Be</Button>
               </div>}
             </div>
-
-          </DialogContent>
+        </DialogContent>
       </Dialog>
-    </>
   );
+}
+
+function cityEventIcon(event: NonNullable<ReturnType<typeof cityEvent>>): LucideIcon {
+  if ('id' in event) {
+    if (event.id === 'worker-union') return UsersRound;
+    if (event.id === 'equipment-breakdown') return Factory;
+  }
+
+  switch (event.title) {
+    case 'Boiler malfunction': return Gauge;
+    case 'Travelling brass merchant': return ScrollText;
+    case 'Supply Shortage': return Package;
+    case 'Machinery discovery': return FlaskConical;
+    case 'Guild overtime': return Factory;
+    case 'WORKERS DEMAND FAIR WAGES': return UsersRound;
+    default: return Bell;
+  }
 }

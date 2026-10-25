@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { CityBuildingIllustration } from '@/components/CityBuildingIllustration';
 import {
     BUILDINGS,
     LEVEL_OUTPUT,
@@ -35,7 +36,6 @@ import {
     eventTerms,
     interactiveEvents,
     isBreakdown,
-    nextPlotTechnology,
     plotLimit,
     stage,
     upgradeCost,
@@ -94,7 +94,6 @@ export function CityManagement({
 }) {
     const [foundryOpen, setFoundryOpen] = useState(false);
     const s = game.state;
-    const land = nextPlotTechnology(s);
 
     return (
         <section className="space-y-4">
@@ -183,67 +182,11 @@ export function CityManagement({
                                     }`}
                             >
                                 {plot ? (
-                                    <svg
-                                        viewBox="0 0 100 88"
-                                        className="w-full max-w-24"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            d="M12 38 L50 14 L88 38 V82 H12Z"
-                                            className="fill-secondary stroke-copper"
-                                            strokeWidth="2"
-                                        />
-                                        <rect
-                                            x="70"
-                                            y="4"
-                                            width="10"
-                                            height="30"
-                                            className="fill-copper"
-                                        />
-                                        {plot.kind === 'boiler' && (
-                                            <circle
-                                                cx="75"
-                                                cy="4"
-                                                r="7"
-                                                className="fill-steam animate-steam"
-                                            />
-                                        )}
-                                        <rect
-                                            x="24"
-                                            y="47"
-                                            width="13"
-                                            height="15"
-                                            className="fill-brass"
-                                        />
-                                        <rect
-                                            x="62"
-                                            y="47"
-                                            width="13"
-                                            height="15"
-                                            className="fill-amber"
-                                        />
-                                        <rect
-                                            x="43"
-                                            y="63"
-                                            width="14"
-                                            height="19"
-                                            className="fill-iron-deep"
-                                        />
-                                        {plot.level > 1 && (
-                                            <path
-                                                d="M23 37 V18 H61 V37"
-                                                className="fill-copper stroke-brass"
-                                            />
-                                        )}
-                                        {plot.level > 2 && (
-                                            <circle
-                                                cx="42"
-                                                cy="15"
-                                                r="10"
-                                                className="fill-brass"
-                                            />
-                                        )}
-                                    </svg>
+                                    <CityBuildingIllustration
+                                        key={`${plot.kind}-${plot.level}`}
+                                        kind={plot.kind}
+                                        level={plot.level}
+                                    />
                                 ) : (
                                     <Icon className="my-5 h-8 w-8 text-copper" />
                                 )}
@@ -273,11 +216,6 @@ export function CityManagement({
                 </div>
             </div>
 
-            <p className="text-xs text-steam">
-                Operating adjacent boilers boost factories and bakeries by 25%.
-                Each Boiler House or Steam Rig level adds 45 steam capacity.
-            </p>
-
             {s.technologies.includes('whirr') && (
                 <p className="text-xs text-steam">
                     Whirr Faster, Think Later: every machine runs 5% faster,
@@ -285,11 +223,6 @@ export function CityManagement({
                 </p>
             )}
 
-            {land && (
-                <p className="text-sm text-steam">
-                    Next expansion: Plot {land.unlockPlot}. Open Research to unlock it.
-                </p>
-            )}
         </section>
     );
 }
@@ -354,6 +287,18 @@ export function CityPlotDetails({
                         Level {plot.level} · {BUILDINGS[plot.kind].purpose}
                     </p>
 
+                    {plot.kind === 'boiler' && (
+                        <p className="text-xs text-muted-foreground">
+                            Operating adjacent boilers boost factories and bakeries by 25%.
+                        </p>
+                    )}
+
+                    {['boiler', 'steamrig'].includes(plot.kind) && (
+                        <p className="text-xs text-muted-foreground">
+                            Each Boiler House or Steam Rig level adds 45 steam capacity.
+                        </p>
+                    )}
+
                     {currentRates && !damaged && (
                         <ProductionSummary {...currentRates} />
                     )}
@@ -375,11 +320,6 @@ export function CityPlotDetails({
                             </p>
                             <ProductionSummary {...upgradedRates} />
 
-                            {['boiler', 'steamrig'].includes(plot.kind) && (
-                                <p className="text-xs">
-                                    Upgrade adds 45 {RESOURCE_NAMES.steam} capacity.
-                                </p>
-                            )}
                         </>
                     )}
 
