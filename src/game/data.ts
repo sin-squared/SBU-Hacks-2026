@@ -1,6 +1,5 @@
 import type { Business, District, Objective, Upgrade } from "./types";
 
-export const CLICK_REWARD = 2;
 export const COST_GROWTH = 1.15;
 export const OFFLINE_CAP_SECONDS = 2 * 60 * 60;
 

@@ -38,6 +38,52 @@
   --color-parchment-ink: var(--parchment-ink);
   --color-amber: var(--amber);
   --color-steam: var(--steam);
+  --color-trade-cost: oklch(0.78 0.14 25);
+  --color-trade-reward: oklch(0.8 0.13 150);
+}
+
+.screen-vignette {
+  animation: failure-vignette 1250ms ease-in-out both;
+}
+.failure-vignette {
+  background: radial-gradient(ellipse at center, transparent 35%, oklch(0.22 0.09 25 / 0.6) 70%, oklch(0.12 0.06 25 / 0.95) 100%);
+  box-shadow: inset 0 0 12vmin 3vmin oklch(0.22 0.1 25 / 0.65);
+}
+.research-vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, oklch(0.35 0.08 150 / 0.35) 75%, oklch(0.25 0.07 150 / 0.7) 100%);
+  box-shadow: inset 0 0 12vmin 3vmin oklch(0.4 0.1 150 / 0.4);
+}
+.unlock-vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, oklch(0.35 0.08 250 / 0.35) 75%, oklch(0.25 0.07 250 / 0.7) 100%);
+  box-shadow: inset 0 0 12vmin 3vmin oklch(0.4 0.1 250 / 0.4);
+}
+.combo-yellow-vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, oklch(0.4 0.1 95 / 0.35) 75%, oklch(0.3 0.09 95 / 0.7) 100%);
+  box-shadow: inset 0 0 12vmin 3vmin oklch(0.5 0.12 95 / 0.4);
+}
+.combo-multiplier[data-color="green"] { color: var(--color-trade-reward); }
+.combo-multiplier[data-color="yellow"] { color: oklch(0.85 0.16 95); }
+.combo-multiplier[data-color="red"] { color: oklch(0.72 0.19 25); }
+.resource-requirement-muted { color: color-mix(in srgb, var(--color-trade-cost) 70%, var(--iron-deep)); }
+.completed-ledger-card > :not(button):not([data-reward]),
+.completed-ledger-card [data-resource] { color: var(--muted-foreground); }
+.completed-ledger-card [data-reward],
+.completed-ledger-card [data-reward] [data-resource] { color: var(--amber); }
+.completed-ledger-card .city-progress { accent-color: var(--muted-foreground); }
+.completed-ledger-card .city-progress::-webkit-progress-value { background: var(--muted-foreground); }
+.progression-popup { animation: progression-popup-in 220ms ease-out both; }
+@keyframes progression-popup-in {
+  from { transform: translateY(8px) scale(0.97); }
+  to { transform: translateY(0) scale(1); }
+}
+
+@keyframes failure-vignette {
+  0%, 100% { opacity: 0; }
+  20%, 55% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-vignette { animation: none; opacity: 0.8; }
 }
 
 :root {
@@ -150,6 +196,14 @@
 .city-plot { aspect-ratio: 0.8; justify-content: flex-end; }
 .city-plot > svg:first-child:not([class*="lucide"]) { width: min(100%, 6rem); height: auto; flex-shrink: 0; }
 .city-progress { accent-color: var(--brass); }
+.city-first-rig {
+  border: 2px solid var(--brass);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--brass) 55%, transparent), inset 0 0 14px color-mix(in srgb, var(--brass) 12%, transparent);
+  animation: first-rig-glow 2s ease-in-out infinite alternate;
+}
+@keyframes first-rig-glow {
+  to { box-shadow: 0 0 30px color-mix(in srgb, var(--brass) 80%, transparent), inset 0 0 18px color-mix(in srgb, var(--brass) 20%, transparent); }
+}
 .city-progress::-webkit-progress-bar { background: var(--iron); border-radius: 2px; }
 .city-progress::-webkit-progress-value { background: var(--brass); border-radius: 2px; }
 @media (prefers-reduced-motion: reduce) {
