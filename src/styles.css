@@ -42,11 +42,15 @@
 
 :root {
   --radius: 0.5rem;
-  --iron: oklch(0.275 0.022 50);        /* #30251F */
+  --iron: oklch(0.275 0.022 50);
+  /* #30251F */
   --iron-deep: oklch(0.2 0.018 50);
-  --copper: oklch(0.62 0.105 62);       /* #B77B42 */
-  --brass: oklch(0.81 0.12 80);         /* #E7B75C */
-  --parchment: oklch(0.88 0.045 85);    /* #E8D9B8 */
+  --copper: oklch(0.62 0.105 62);
+  /* #B77B42 */
+  --brass: oklch(0.81 0.12 80);
+  /* #E7B75C */
+  --parchment: oklch(0.88 0.045 85);
+  /* #E8D9B8 */
   --parchment-ink: oklch(0.3 0.04 50);
   --amber: oklch(0.82 0.16 70);
   --steam: oklch(0.92 0.01 80);
@@ -79,7 +83,10 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -87,7 +94,14 @@
     background-image: radial-gradient(ellipse at top, oklch(0.3 0.03 50), transparent 70%);
     min-height: 100vh;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: 0; }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: 0;
+  }
 }
 
 @utility panel {
@@ -114,9 +128,19 @@
   border-radius: var(--radius-md);
   box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.4), 0 2px 0 oklch(0.35 0.06 55);
   transition: transform 0.1s, filter 0.15s;
-  &:hover:not(:disabled) { filter: brightness(1.1); }
-  &:active:not(:disabled) { transform: translateY(1px); }
-  &:disabled { filter: grayscale(0.8) brightness(0.6); cursor: not-allowed; }
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    filter: grayscale(0.8) brightness(0.6);
+    cursor: not-allowed;
+  }
 }
 
 @utility text-brass-gradient {
@@ -126,32 +150,120 @@
   color: transparent;
 }
 
-@utility glow { box-shadow: var(--shadow-glow); }
-@utility bg-sky { background: var(--gradient-sky); }
-
-@keyframes spin-slow { to { transform: rotate(360deg); } }
-@keyframes spin-rev { to { transform: rotate(-360deg); } }
-@keyframes steam-rise {
-  0% { transform: translateY(0) scale(0.6); opacity: 0; }
-  20% { opacity: 0.55; }
-  100% { transform: translateY(-60px) scale(1.6); opacity: 0; }
+@utility glow {
+  box-shadow: var(--shadow-glow);
 }
-@keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.75; } }
-@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
-@keyframes float-up { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-50px); opacity: 0; } }
 
-@utility animate-spin-slow { animation: spin-slow 12s linear infinite; transform-box: fill-box; transform-origin: center; }
-@utility animate-spin-rev { animation: spin-rev 8s linear infinite; transform-box: fill-box; transform-origin: center; }
-@utility animate-steam { animation: steam-rise 3.5s ease-out infinite; transform-box: fill-box; transform-origin: center; }
-@utility animate-flicker { animation: flicker 2.5s ease-in-out infinite; }
-@utility animate-pop { animation: pop 0.35s ease-out; }
-@utility animate-float-up { animation: float-up 0.9s ease-out forwards; }
+@utility bg-sky {
+  background: var(--gradient-sky);
+}
 
-.city-plot { aspect-ratio: 0.8; justify-content: flex-end; }
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spin-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes steam-rise {
+  0% {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 0.55;
+  }
+
+  100% {
+    transform: translateY(-60px) scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes flicker {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.06);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+}
+
+@utility animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@utility animate-spin-rev {
+  animation: spin-rev 8s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@utility animate-steam {
+  animation: steam-rise 3.5s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@utility animate-flicker {
+  animation: flicker 2.5s ease-in-out infinite;
+}
+
+@utility animate-pop {
+  animation: pop 0.35s ease-out;
+}
+
+@utility animate-float-up {
+  animation: float-up 0.9s ease-out forwards;
+}
+
+.city-plot {
+  aspect-ratio: 0.8;
+  justify-content: flex-end;
+}
+
 .city-canvas {
   isolation: isolate;
   position: relative;
 }
+
 .city-canvas::before {
   background-image: linear-gradient(oklch(0.2 0.018 50 / 0.18), oklch(0.2 0.018 50 / 0.18)),
     url("/images/brasshaven-background.jpg");
@@ -164,7 +276,48 @@
   position: fixed;
   z-index: -1;
 }
-.city-management-panel {
+
+.city-plot-scene {
+  aspect-ratio: 1360 / 768;
+  left: 50.5%;
+  pointer-events: none;
+  position: fixed;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  width: max(100vw, 177.083333vh);
+  z-index: 0;
+}
+
+.city-plot-grid {
+  display: grid;
+  column-gap: 0%;
+  row-gap: 0%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  height: 51.2%;
+  left: 23.5%;
+  pointer-events: none;
+  position: absolute;
+  top: 27%;
+  width: 53.6%;
+}
+
+.city-plot-grid .city-plot {
+  align-self: center;
+  height: 82%;
+  width: 89%;
+  min-height: 0;
+  min-width: 0;
+  pointer-events: auto;
+}
+
+.city-plot-grid .city-plot:not(.border-brass) {
+  border-color: oklch(0.72 0.09 78 / 0.75);
+}
+
+.city-management-panel,
+.city-plot-details-panel,
+.city-title-hud {
   background: oklch(0.2 0.018 50);
   border: 1px solid color-mix(in oklab, var(--copper) 70%, transparent);
   border-radius: var(--radius-lg);
@@ -173,9 +326,46 @@
   position: relative;
   z-index: 1;
 }
+
+.city-event-panel {
+  border: 1px solid color-mix(in oklab, var(--copper) 70%, transparent);
+  padding: 1rem;
+}
+
+.city-foundry-menu {
+  margin-left: auto;
+  position: relative;
+  width: fit-content;
+  z-index: 2;
+}
+
+.city-foundry-popover {
+  margin-top: 0.5rem;
+  max-height: min(50vh, 24rem);
+  overflow-y: auto;
+  width: min(22rem, calc(100vw - 3rem));
+}
+
 @media (min-width: 80rem) {
+  .city-title-hud {
+    left: 1.5rem;
+    position: fixed;
+    top: 1.5rem;
+    width: min(22rem, calc(100vw - 3rem));
+    z-index: 2;
+  }
+  .city-event-panel {
+    background: oklch(0.2 0.018 50);
+    max-height: min(12rem, calc(100vh - 3rem));
+    overflow-y: auto;
+    position: fixed;
+    right: 1.5rem;
+    top: 1.5rem;
+    width: min(22rem, calc(100vw - 3rem));
+    z-index: 2;
+  }
   .city-play-layout {
-    padding-right: 24rem;
+    padding-right: 48rem;
   }
   .city-management-panel {
     max-height: calc(100vh - 16rem);
@@ -185,11 +375,59 @@
     top: 15rem;
     width: min(22rem, calc(100vw - 3rem));
   }
+  .city-plot-details-panel {
+    max-height: calc(100vh - 16rem);
+    overflow-y: auto;
+    position: fixed;
+    left: 1.5rem;
+    top: 15rem;
+    width: min(22rem, calc(100vw - 3rem));
+    z-index: 2;
+  }
 }
-.city-plot > svg:first-child:not([class*="lucide"]) { width: min(100%, 6rem); height: auto; flex-shrink: 0; }
-.city-progress { accent-color: var(--brass); }
-.city-progress::-webkit-progress-bar { background: var(--iron); border-radius: 2px; }
-.city-progress::-webkit-progress-value { background: var(--brass); border-radius: 2px; }
+
+@media (min-width: 80rem) and (min-height: 40rem) and (max-aspect-ratio: 2 / 1) {
+  .city-foundry-menu {
+    bottom: 1.5rem;
+    position: fixed;
+    right: calc(22rem + 2.25rem);
+  }
+
+  .city-foundry-popover {
+    bottom: calc(100% + 0.5rem);
+    max-height: calc(12vh - 3rem);
+    margin-top: 0;
+    position: absolute;
+    right: 0;
+  }
+}
+
+.city-plot>svg:first-child:not([class*="lucide"]) {
+  width: min(100%, 6rem);
+  height: auto;
+  flex-shrink: 0;
+}
+
+.city-progress {
+  accent-color: var(--brass);
+}
+
+.city-progress::-webkit-progress-bar {
+  background: var(--iron);
+  border-radius: 2px;
+}
+
+.city-progress::-webkit-progress-value {
+  background: var(--brass);
+  border-radius: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

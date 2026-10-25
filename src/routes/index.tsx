@@ -3,7 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Cog, Settings, ScrollText, Ship, FlaskConical, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { CityManagement } from '@/components/CityManagement';
+import { CityManagement, CityPlotDetails } from '@/components/CityManagement';
 import { Contracts, Research, Expeditions, EngineProject, CityEvent } from '@/components/CityPanels';
 import { RESOURCE_NAMES, type Resource } from '@/game/city-config';
 import { production, stage, steamCapacity } from '@/game/city';
@@ -36,6 +36,8 @@ function Index() {
     const [tab, setTab] = useState<string>('Contracts');
     const [settings, setSettings] = useState(false);
     const [confirmation, setConfirmation] = useState<'reset' | 'demo' | null>(null);
+    const [selectedPlot, setSelectedPlot] = useState(0);
+    const [demolishPlot, setDemolishPlot] = useState(false);
 
     if (!game.loaded) {
         return (
@@ -195,7 +197,14 @@ function Index() {
 
             <div className="city-play-layout">
                 <div className="city-play-area min-w-0">
-                    <CityManagement game={game} />
+                    <CityManagement
+                        game={game}
+                        selectedPlot={selectedPlot}
+                        onSelectPlot={(plot) => {
+                            setSelectedPlot(plot);
+                            setDemolishPlot(false);
+                        }}
+                    />
                     <CityEvent game={game} />
                 </div>
 
@@ -221,6 +230,18 @@ function Index() {
                     {tab === 'Research' && <Research game={game} />}
                     {tab === 'Expeditions' && <Expeditions game={game} />}
                     {tab === 'Great Engine' && <EngineProject game={game} />}
+                </section>
+
+                <section
+                    className="city-plot-details-panel space-y-3"
+                    aria-label="Selected plot details"
+                >
+                    <CityPlotDetails
+                        game={game}
+                        selectedPlot={selectedPlot}
+                        demolish={demolishPlot}
+                        setDemolish={setDemolishPlot}
+                    />
                 </section>
             </div>
 
