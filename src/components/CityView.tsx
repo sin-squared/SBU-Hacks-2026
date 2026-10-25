@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { BUSINESSES, CLICK_REWARD, DISTRICTS } from "@/game/data";
+import { BUSINESSES, DISTRICTS } from "@/game/data";
 import { businessMultiplier } from "@/game/economy";
 import type { BusinessId, DistrictId } from "@/game/types";
 import type { Game } from "@/hooks/useGame";
@@ -22,18 +21,7 @@ const DISTRICT_SPAN: Record<DistrictId, [number, number]> = {
 
 export function CityView({ game }: { game: Game }) {
   const { state } = game;
-  const [floats, setFloats] = useState<{ id: number; x: number; y: number }[]>([]);
-  const [pulse, setPulse] = useState(0);
   const engineOwned = state.owned.engine > 0;
-
-  const onEngine = (e: React.MouseEvent<HTMLButtonElement>) => {
-    game.click();
-    setPulse((p) => p + 1);
-    const r = e.currentTarget.getBoundingClientRect();
-    const id = Date.now() + Math.random();
-    setFloats((f) => [...f.slice(-8), { id, x: e.clientX - r.left, y: e.clientY - r.top }]);
-    setTimeout(() => setFloats((f) => f.filter((x) => x.id !== id)), 900);
-  };
 
   return (
     <section className="panel overflow-hidden p-0">
@@ -84,26 +72,16 @@ export function CityView({ game }: { game: Game }) {
           </g>
         </svg>
 
-        {/* Clickable Great Engine */}
-        <button
-          onClick={onEngine}
-          aria-label={`Crank the Great Engine for ${CLICK_REWARD} coins`}
-          className="group absolute left-1/2 top-[58%] flex h-[22%] w-[11%] min-w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
-        >
-          <svg key={pulse} viewBox="0 0 100 100" className={`h-full w-full drop-shadow-lg ${pulse ? "animate-pop" : ""} ${engineOwned ? "glow rounded-full" : ""}`}>
+        <div className="absolute left-1/2 top-[58%] flex h-[22%] w-[11%] min-w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full">
+          <svg viewBox="0 0 100 100" className={`h-full w-full drop-shadow-lg ${engineOwned ? "glow rounded-full" : ""}`}>
             <Gear className="fill-brass animate-spin-slow" />
             <circle cx={50} cy={50} r={14} className="fill-iron-deep" />
             <circle cx={50} cy={50} r={7} className={engineOwned ? "fill-amber animate-flicker" : "fill-copper"} />
           </svg>
-          {floats.map((f) => (
-            <span key={f.id} className="pointer-events-none absolute font-display font-bold text-amber animate-float-up" style={{ left: f.x, top: f.y }}>
-              +{CLICK_REWARD}
-            </span>
-          ))}
-        </button>
+        </div>
       </div>
       <p className="border-t border-copper/50 px-4 py-2 text-center text-sm text-muted-foreground">
-        {engineOwned ? "The Great Engine roars at full power." : "Crank the Great Engine for spare coins while the city wakes."}
+        {engineOwned ? "The Great Engine roars at full power." : "Build industry to bring the Great Engine back to life."}
       </p>
     </section>
   );

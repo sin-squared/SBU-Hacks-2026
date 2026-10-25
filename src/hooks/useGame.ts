@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { CLICK_REWARD, DISTRICTS, OFFLINE_CAP_SECONDS } from "@/game/data";
+import { DISTRICTS, OFFLINE_CAP_SECONDS } from "@/game/data";
 import { applyDistrictUnlocks, buyBusiness, buyUpgrade, earn, totalIncome } from "@/game/economy";
 import { applyObjectives, initialState } from "@/game/progression";
 import type { BusinessId, District, GameState } from "@/game/types";
@@ -7,7 +7,6 @@ import { clearSave, loadGame, saveGame } from "@/utils/save";
 
 type Action =
   | { type: "tick"; seconds: number }
-  | { type: "click" }
   | { type: "buyBusiness"; id: BusinessId }
   | { type: "buyUpgrade"; id: string }
   | { type: "load"; state: GameState }
@@ -23,8 +22,6 @@ function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
     case "tick":
       return progress(earn(state, totalIncome(state) * action.seconds));
-    case "click":
-      return progress(earn(state, CLICK_REWARD));
     case "buyBusiness":
       return progress(buyBusiness(state, action.id));
     case "buyUpgrade":
@@ -110,7 +107,6 @@ export function useGame() {
     dismissOffline: () => setOfflineEarned(0),
     newDistrict,
     dismissDistrict: () => setNewDistrict(null),
-    click: () => dispatch({ type: "click" }),
     buyBusiness: (id: BusinessId) => act({ type: "buyBusiness", id }),
     buyUpgrade: (id: string) => act({ type: "buyUpgrade", id }),
     reset: () => {

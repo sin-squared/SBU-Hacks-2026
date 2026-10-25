@@ -1,22 +1,36 @@
 
 import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Cog, Settings, ScrollText, Ship, FlaskConical, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ActionPopup } from '@/components/ActionPopup';
 import { CityManagement, CityPlotDetails } from '@/components/CityManagement';
-import { Contracts, Research, Expeditions, EngineProject, CityEvent } from '@/components/CityPanels';
-import { RESOURCE_NAMES, type Resource } from '@/game/city-config';
-import { production, stage, steamCapacity } from '@/game/city';
-import { formatNumber } from '@/game/economy';
+import { CityResources } from '@/components/CityResources';
+import {
+    Contracts,
+    Research,
+    Expeditions,
+    EngineProject,
+    CityEvent,
+} from '@/components/CityPanels';
+import { hasAirshipDock, production, stage } from '@/game/city';
 import { useCity } from '@/hooks/useCity';
 
 export const Route = createFileRoute('/')({
     head: () => ({
         meta: [
             { title: 'Brasshaven: Rise of the Clockwork City' },
-            { name: 'description', content: 'Manage a steampunk city: balance gears and steam, fulfill contracts, explore lost frontiers, and restore the Great Engine.' },
+            {
+                name: 'description',
+                content:
+                    'Manage a steampunk city: balance gears and steam, fulfill contracts, explore lost frontiers, and restore the Great Engine.',
+            },
             { property: 'og:title', content: 'Brasshaven: Rise of the Clockwork City' },
-            { property: 'og:description', content: 'Build a resource-driven clockwork city with contracts, research, airship expeditions, and an ancient engine to restore.' },
+            {
+                property: 'og:description',
+                content:
+                    'Build a resource-driven clockwork city with contracts, research, airship expeditions, and an ancient engine to restore.',
+            },
             { property: 'og:type', content: 'website' },
             { name: 'twitter:card', content: 'summary_large_image' },
         ],
@@ -33,11 +47,18 @@ const TABS = [
 
 function Index() {
     const game = useCity();
+    const { act } = game;
+
     const [tab, setTab] = useState<string>('Contracts');
     const [settings, setSettings] = useState(false);
     const [confirmation, setConfirmation] = useState<'reset' | 'demo' | null>(null);
     const [selectedPlot, setSelectedPlot] = useState(0);
     const [demolishPlot, setDemolishPlot] = useState(false);
+
+    const dismissUnlock = useCallback(
+        (id: number) => act({ type: 'dismissUnlock', id }),
+        [act],
+    );
 
     if (!game.loaded) {
         return (
@@ -49,9 +70,18 @@ function Index() {
 
     const s = game.state;
     const rates = production(s);
+    const dock = hasAirshipDock(s);
+    const currentTab = tab === 'Expeditions' && !dock ? 'Contracts' : tab;
 
     return (
         <main className="city-canvas mx-auto max-w-7xl space-y-5 p-4 sm:p-6">
+            <ActionPopup
+                feedback={s.actionFeedback}
+                combo={s.contractCombo}
+                unlockNotices={s.unlockNotices}
+                dismissUnlock={dismissUnlock}
+            />
+
             <header className="flex items-center justify-between gap-3 border-b-2 border-copper pb-4">
                 <div className="flex items-center gap-3">
                     <Cog className="h-9 w-9 animate-spin-slow text-brass" />
@@ -83,8 +113,8 @@ function Index() {
 
             {s.demo && (
                 <div className="border border-brass p-3 text-sm text-brass">
-                    DEMO CITY · Accelerated starting resources; expedition blueprints and
-                    the Ancient Core still need to be recovered.
+                    DEMO CITY · Accelerated starting resources; expedition blueprints and the
+                    Ancient Core still need to be recovered.
                 </div>
             )}
 
@@ -136,46 +166,7 @@ function Index() {
                 </section>
             )}
 
-            <section
-                className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5"
-                aria-label="City resources"
-            >
-                {(Object.keys(RESOURCE_NAMES) as Resource[]).map((k) => (
-                    <div
-                        key={k}
-                        className="group relative min-w-0 overflow-hidden rounded-lg border border-copper/60 bg-gradient-to-br from-secondary/80 to-iron-deep/80 p-4 shadow-md transition-colors hover:border-brass/80"
-                    >
-                        <div
-                            aria-hidden="true"
-                            className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-brass to-copper"
-                        />
-
-                        <div className="pl-2">
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                                {RESOURCE_NAMES[k]}
-                            </p>
-
-                            <p className="mt-2 break-words font-display text-2xl font-bold tabular-nums text-brass">
-                                {formatNumber(s.resources[k])}
-                                {k === 'steam' && (
-                                    <span className="text-sm font-normal text-muted-foreground">
-                                        {' '}/ {steamCapacity(s)}
-                                    </span>
-                                )}
-                            </p>
-
-                            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-copper/30 pt-2 text-xs">
-                                <span className="text-emerald-300">
-                                    +{rates.output[k].toFixed(2)}/s
-                                </span>
-                                <span className="text-muted-foreground">
-                                    −{rates.input[k].toFixed(2)}/s
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </section>
+            <CityResources state={s} />
 
             <div className="flex flex-wrap items-center gap-3 border-y border-copper/40 py-3">
                 <p role="status" aria-live="polite" className="text-sm text-brass">
@@ -213,23 +204,42 @@ function Index() {
                         aria-label="City management"
                         className="mb-5 grid grid-cols-2 gap-2"
                     >
-                        {TABS.map((t) => (
-                            <Button
-                                key={t.name}
-                                variant={tab === t.name ? 'default' : 'outline'}
-                                className={tab === t.name ? 'btn-brass' : ''}
-                                onClick={() => setTab(t.name)}
-                            >
-                                <t.icon />
-                                {t.name}
-                            </Button>
-                        ))}
+                        {TABS.map((t) => {
+                            const locked = t.name === 'Expeditions' && !dock;
+
+                            return (
+                                <Button
+                                    key={t.name}
+                                    aria-disabled={locked}
+                                    title={locked ? 'Airship Dock Required' : undefined}
+                                    variant={currentTab === t.name ? 'default' : 'outline'}
+                                    className={
+                                        locked
+                                            ? 'bg-secondary/20 text-muted-foreground'
+                                            : currentTab === t.name
+                                                ? 'btn-brass'
+                                                : ''
+                                    }
+                                    onClick={() => {
+                                        if (locked) {
+                                            game.act({ type: 'dockRequired' });
+                                        } else {
+                                            setTab(t.name);
+                                        }
+                                    }}
+                                >
+                                    <t.icon />
+                                    {t.name}
+                                    {locked && <span className="text-xs">Locked</span>}
+                                </Button>
+                            );
+                        })}
                     </nav>
 
-                    {tab === 'Contracts' && <Contracts game={game} />}
-                    {tab === 'Research' && <Research game={game} />}
-                    {tab === 'Expeditions' && <Expeditions game={game} />}
-                    {tab === 'Great Engine' && <EngineProject game={game} />}
+                    {currentTab === 'Contracts' && <Contracts game={game} />}
+                    {currentTab === 'Research' && <Research game={game} />}
+                    {currentTab === 'Expeditions' && <Expeditions game={game} />}
+                    {currentTab === 'Great Engine' && <EngineProject game={game} />}
                 </section>
 
                 <section
